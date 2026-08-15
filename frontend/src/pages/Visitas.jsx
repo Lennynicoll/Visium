@@ -4,6 +4,7 @@ import * as visitaService from '../api/visitaService';
 import * as visitanteService from '../api/visitanteService';
 import * as anfitrionService from '../api/anfitrionService';
 import * as departamentoService from '../api/departamentoService';
+import * as motivoService from '../api/motivoService';
 const fields = [
   {
     name: 'fechaHora',
@@ -11,7 +12,14 @@ const fields = [
     type: 'datetime-local',
     required: true,
   },
-  { name: 'motivo', label: 'Motivo', required: true },
+  {
+    name: 'motivo',
+    label: 'Motivo',
+    type: 'select',
+    required: true,
+    loadOptions: () =>
+      motivoService.getAll().then((res) => res.data.map((m) => ({ value: m.nombre, text: m.nombre }))),
+  },
   { name: 'comentarios', label: 'Comentarios' },
   {
     name: 'visitanteId',
@@ -40,7 +48,7 @@ const fields = [
     loadOptions: (f) =>
       anfitrionService.getAll().then((res) =>
         res.data
-          .filter((a) => !f.departamentoId || a.departamentoId === f.departamentoId)
+          .filter((a) => !f.departamentoId || String(a.departamentoId) === String(f.departamentoId))
           .map((a) => ({ value: a.id, text: `${a.nombre} ${a.apellido}` }))
       ),
   },
@@ -132,7 +140,11 @@ export default function Visitas() {
   const toolbar = (
     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#9b9ba8' }}>
       Estado:
-      <select value={estado} onChange={(e) => setEstado(e.target.value)} style={{ padding: '5px 8px' }}>
+      <select
+        value={estado}
+        onChange={(e) => setEstado(e.target.value)}
+        style={{ padding: '5px 8px', color: '#f97316', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 4 }}
+      >
         <option value="">Todos</option>
         <option value="Pendiente">Pendiente</option>
         <option value="En Curso">En Curso</option>

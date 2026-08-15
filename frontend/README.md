@@ -1,4 +1,4 @@
-# patient-ui - Frontend React del Sistema de Registro de Visitantes
+# Visium - Frontend React del Sistema de Registro de Visitantes
 
 Frontend SPA construido con React 19 + Vite. Consume la API REST del backend (`http://localhost:5297/api`) mediante Axios.
 
