@@ -1,0 +1,29 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a0f;
+  --bg-card: #14141d;
+  --bg-card-hover: #1a1a26;
+  --bg-input: #1a1a26;
+  --border: #2a2a3a;
+  --purple: #8b5cf6;
+  --purple-dark: #7c3aed;
+  --purple-light: #a78bfa;
+  --text: #e5e5ea;
+  --text-muted: #9b9ba8;
+  --danger: #f87171;
+  --danger-bg: #2a1518;
+  --success: #34d399;
+  --warning: #fbbf24;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
