@@ -1,20 +1,19 @@
 services:
   db:
-    image: mysql:8.0
-    container_name: visium-mysql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: visium-sqlserver
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: RegistroVisitantesDb
-      MYSQL_USER: visium_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD must be set}
     volumes:
-      - db_data:/var/lib/mysql
+      - sqlserver_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" -C || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 10s
+      retries: 15
     networks:
       - app-internal
 
@@ -29,9 +28,8 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=RegistroVisitantesDb;User=visium_user;Password=${MYSQL_PASSWORD};"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=RegistroVisitantesDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
       CORS__Origins: ${CORS_ORIGINS:?CORS_ORIGINS must be set}
-      MySQL__ServerVersion: "8.0.0-mysql"
     networks:
       - app-internal
       - proxy-net
@@ -44,7 +42,7 @@ services:
       traefik.http.services.visium-api.loadbalancer.server.port: "8080"
 
 volumes:
-  db_data:
+  sqlserver_data:
 
 networks:
   app-internal:
