@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: mysql:8.0
@@ -8,10 +6,8 @@ services:
     environment:
       MYSQL_DATABASE: RegistroVisitantesDb
       MYSQL_USER: visium_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    ports:
-      - "3306:3306"
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -19,6 +15,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - app-internal
 
   api:
     build:
@@ -32,10 +30,26 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=RegistroVisitantesDb;User=visium_user;Password=${MYSQL_PASSWORD};"
-      CORS__Origins: ${CORS_ORIGINS}
+      CORS__Origins: ${CORS_ORIGINS:?CORS_ORIGINS must be set}
       MySQL__ServerVersion: "8.0.0-mysql"
-    ports:
-      - "8080:8080"
+    networks:
+      - app-internal
+      - proxy-net
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: proxy-net
+      traefik.http.routers.visium-api.rule: "Host(`api-lenny-visium.opticredit.app`)"
+      traefik.http.routers.visium-api.entrypoints: websecure
+      traefik.http.routers.visium-api.tls.certresolver: exonoor
+      traefik.http.services.visium-api.loadbalancer.server.port: "8080"
 
 volumes:
   db_data:
+
+networks:
+  app-internal:
+    driver: bridge
+    internal: true
+
+  proxy-net:
+    external: true
